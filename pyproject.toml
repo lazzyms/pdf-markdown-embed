@@ -1,0 +1,24 @@
+[project]
+name = "md-converter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=46.0.5",
+    "docling>=2.74.0",
+    "easyocr>=1.7.2",
+    "langchain>=1.2.10",
+    "langchain-community>=0.4.1",
+    "langchain-ollama>=1.0.1",
+    "langchain-postgres>=0.0.17",
+    "langchain-text-splitters>=1.1.1",
+    "langchain-unstructured>=1.0.1",
+    "minio>=7.2.20",
+    "psycopg2-binary>=2.9.11",
+    "pypdf2>=3.0.1",
+    "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
+    "torch>=2.10.0",
+    "unstructured[docx,image,pdf]>=0.20.8",
+]
