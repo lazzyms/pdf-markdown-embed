@@ -97,6 +97,42 @@ def combine_markdown_files(markdown_parts: List[Dict[str, Any]]) -> str:
     return combined_markdown
 
 
+def split_markdown_by_pages(markdown_text: str) -> List[Dict[str, Any]]:
+    """
+    Split combined markdown text into per-page sections based on {N} page markers.
+
+    The combined markdown uses ``{N}`` as page-boundary markers (produced by
+    :func:`replace_page_breaks_with_numbers`).  Content *before* the first
+    marker belongs to page 1, content *between* marker ``{k}`` and ``{k+1}``
+    belongs to page ``k+1``, and so on.
+
+    Args:
+        markdown_text (str): The combined markdown with ``{N}`` page markers.
+
+    Returns:
+        List[Dict[str, Any]]: Ordered list of dicts, each with keys
+        ``'page_number'`` (int, 1-indexed) and ``'markdown'`` (str).
+    """
+    # Split on {N} markers while capturing the numeric group
+    parts = re.split(r"\{(\d+)\}", markdown_text)
+
+    pages: List[Dict[str, Any]] = []
+    # parts layout after split:
+    #   parts[0]            – content before {1}  → page 1
+    #   parts[1], parts[2]  – "1", content after {1} → page 2
+    #   parts[3], parts[4]  – "2", content after {2} → page 3
+    #   …
+    # Even-indexed entries are page content; odd-indexed are the marker digits.
+    for i, part in enumerate(parts):
+        if i % 2 == 0:
+            content = part.strip()
+            if content:
+                page_number = (i // 2) + 1
+                pages.append({"page_number": page_number, "markdown": content})
+
+    return pages
+
+
 def replace_page_breaks_with_numbers(markdown_text: str, start_page: int = 1) -> str:
     """
     Replace page break placeholders with actual page numbers.
@@ -131,7 +167,9 @@ def get_pdf_converter() -> Optional[DocumentConverter]:
     Returns:
         Optional[DocumentConverter]: The configured converter, or None if creation fails.
     """
-    accelerator_options = AcceleratorOptions(device=AcceleratorDevice.AUTO)
+    accelerator_options = AcceleratorOptions(
+        device=AcceleratorDevice.AUTO
+    )  # if cuda or mps is available it will automatically use it, otherwise it will fall back to CPU
     table_former_mode = TableFormerMode.FAST
     do_cell_matching = False
     generate_picture_images = True
@@ -177,7 +215,7 @@ def process_pdf(
     pages_per_split: int = 1,
     context_lines_before: int = 5,
     context_lines_after: int = 5,
-) -> str:
+) -> List[Dict[str, Any]]:
     """
     Process a PDF file, convert it to markdown, and process embedded images.
 
@@ -188,7 +226,8 @@ def process_pdf(
         context_lines_after (int, optional): Lines of context after an image. Defaults to 5.
 
     Returns:
-        str: The final markdown text.
+        List[Dict[str, Any]]: Ordered list of per-page dicts, each with keys
+        ``'page_number'`` (int, 1-indexed) and ``'markdown'`` (str).
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"Input PDF file '{file_path}' does not exist")
@@ -270,7 +309,7 @@ def process_pdf(
             except OSError:
                 pass
 
-        return markdown_with_page_numbers
+        return split_markdown_by_pages(markdown_with_page_numbers)
 
     contexts = []
 
@@ -298,4 +337,4 @@ def process_pdf(
         except OSError:
             pass
 
-    return final_markdown
+    return split_markdown_by_pages(final_markdown)

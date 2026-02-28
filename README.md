@@ -3,13 +3,12 @@
 [![Python Version](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-**PDF -> Markdown -> Embedding** is a robust, open-source document and image processing pipeline. It leverages state-of-the-art tools like `docling`, `easyocr`, and `langchain` to extract, process, and convert various document formats (PDF, DOCX, Images) into Markdown. It seamlessly integrates with **pgvector** for vector storage and **MinIO** for object storage, making it an ideal backend for Retrieval-Augmented Generation (RAG) and LLM-powered applications.
+**PDF -> Markdown -> Embedding** is a robust, open-source document and image processing pipeline. It leverages state-of-the-art tools like `docling`, `easyocr`, and `langchain` to extract, process, and convert PDF document into Markdown. It seamlessly integrates with **pgvector** for vector storage and **MinIO** for object storage, making it an ideal backend for Retrieval-Augmented Generation (RAG) and LLM-powered applications.
 
 ---
 
 ## Features
 
-- **Multi-format Document Processing**: Extract text and structure from PDFs, DOCX, and images using `unstructured` and `docling`.
 - **OCR Capabilities**: Built-in Optical Character Recognition using `easyocr` and `torch`.
 - **Vector Storage**: Store and query document embeddings efficiently using PostgreSQL with the `pgvector` extension.
 - **Object Storage**: Reliable file and asset storage using self-hosted MinIO.
@@ -41,11 +40,7 @@ Follow these steps to set up the project locally.
 
 Create a `.env` file in the root directory to configure your database, storage, and application settings.
 
-```bash
-cp .env.example .env
-```
-
-_If `.env.example` is not present, create a `.env` file with the following essential variables:_
+_Create a `.env` file with the following essential variables:_
 
 ```env
 # PostgreSQL / pgvector settings
@@ -66,14 +61,7 @@ MINIO_SECRET_KEY=your_secure_password
 ### 2. Run Docker Containers
 
 The project relies on PostgreSQL (with pgvector) and MinIO. Start the required infrastructure using Docker Compose.
-
-First, ensure the external Docker network exists:
-
-```bash
-docker network create app-network
-```
-
-Then, spin up the containers in the background:
+Spin up the containers in the background:
 
 ```bash
 docker compose up -d
@@ -104,7 +92,7 @@ Once the containers are healthy and dependencies are installed, you can run the 
 
 ```bash
 # If using uv sync
-uv run python src/main.py
+uv run src/main.py
 
 # If virtual environment is activated
 python src/main.py

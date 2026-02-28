@@ -1,4 +1,11 @@
 import os
+import sys
+
+# Ensure the project root is on sys.path so `python src/main.py` works as well
+# as `uv run src/main.py` or running from within an activated virtual env.
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 
 from langchain_core.documents import Document
 
@@ -26,18 +33,25 @@ def generate_embedding(file_path: str, file_id: str, file_name: str) -> bool:
     logger.info(f"Generating embedding for {file_name} (ID: {file_id}) at {file_path}")
 
     try:
-        markdown_text = process_pdf(file_path)
+        pages = process_pdf(file_path)
 
-        # Wrap the markdown text in a Document object as expected by embed_file
+        if not pages:
+            logger.warning(f"No pages extracted from {file_name}")
+            return False
+
+        # One Document per page so that chunks never cross page boundaries.
+        # The page_number metadata is propagated to every embedding chunk.
         docs = [
             Document(
-                page_content=markdown_text,
+                page_content=page["markdown"],
                 metadata={
                     "file_id": file_id,
                     "source": file_path,
                     "file_name": file_name,
+                    "page_number": page["page_number"],
                 },
             )
+            for page in pages
         ]
 
         return embed_file(file_id, file_name, docs)
