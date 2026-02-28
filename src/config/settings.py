@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://postgres:postgres@localhost:5433/postgres"
     files: str = "[]"
     embedding_model: str = "nomic-embed-text"
+    llm_model: str = "qwen3-vl"
 
     # MinIO settings
     minio_endpoint: str = "localhost:9000"

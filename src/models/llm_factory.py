@@ -17,7 +17,7 @@ def get_llm_client() -> ChatOllama:
         # and pass it here depending on the use case. For now, we use the embedding_model or a default.
         # Actually, for image description, a vision model like 'llava' is typically needed.
         # Let's use the embedding_model from settings, but ideally it should be a vision-capable model.
-        model_name = settings.embedding_model
+        model_name = settings.llm_model
         logger.info(f"Initializing ChatOllama with model: {model_name}")
         return ChatOllama(model=model_name, temperature=0.2)
     except Exception as e:
