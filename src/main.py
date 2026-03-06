@@ -12,6 +12,8 @@ from langchain_core.documents import Document
 from src.config.settings import settings
 from src.processing.document_processor import process_pdf
 from src.storage.vector_store import embed_file
+from src.storage.vectorless import get_tree, summarize_leaves
+from src.storage.tree_store import store_tree
 from src.storage.minio_client import MinioClient
 from src.utils.logger import get_logger
 
@@ -54,7 +56,31 @@ def generate_embedding(file_path: str, file_id: str, file_name: str) -> bool:
             for page in pages
         ]
 
-        return embed_file(file_id, file_name, docs)
+        markdown_file_path = os.path.join(
+            settings.temporary_folder, f"{file_id}_{file_name}.md"
+        )
+        with open(markdown_file_path, "w") as f:
+            for doc in docs:
+                f.write(doc.page_content + "\n\n")
+
+        process_type = settings.process_type.lower()
+
+        if process_type == "vectorless":
+            logger.info(f"Processing {file_name} using tree-based approach")
+            tree = get_tree(file_id, file_name, docs)
+            logger.info(f"Summarizing leaf nodes for {file_name}")
+            tree = summarize_leaves(tree)
+            logger.info(f"Storing tree for {file_name} (ID: {file_id})")
+            store_tree(
+                root=tree,
+                file_id=file_id,
+                file_name=file_name,
+                source=file_path,
+            )
+            return True
+        else:
+            logger.info(f"Processing {file_name} using embedding-based approach")
+            return embed_file(file_id, file_name, docs)
     except Exception as e:
         logger.exception(f"Failed to generate embedding for {file_name}")
         return False

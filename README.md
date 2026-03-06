@@ -14,6 +14,21 @@
 - **Object Storage**: Reliable file and asset storage using self-hosted MinIO.
 - **LLM Integration**: Ready-to-use LangChain and Ollama integrations for advanced text processing and embedding generation.
 
+## Vectorless (Tree-based) Approach
+
+The project supports a "vectorless" processing mode that builds a hierarchical, tree-based
+representation of documents from their Markdown instead of producing embeddings for every
+chunk. Key points:
+
+- **How it works**: pages are combined and split by Markdown headers (#, ##, ###, ####) to
+  produce a `Tree` where headings become nested nodes. Leaf nodes are summarized using an
+  LLM and the rolled-up tree is stored for later retrieval.
+- **When to use**: useful when you want structured, section-level summaries or to reduce
+  embedding costs by avoiding full vectorization of every chunk.
+- **Enable it**: set `PROCESS_TYPE=vectorless` in your `.env` (or update `settings.process_type`).
+- **Implementation**: the tree-based pipeline is implemented in [src/storage/vectorless.py](src/storage/vectorless.py)
+  and orchestrated from [src/main.py](src/main.py).
+
 ---
 
 ## Prerequisites
